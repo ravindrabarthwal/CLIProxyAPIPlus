@@ -343,6 +343,52 @@ func TestApplyHeaders_GitHubAPIVersion(t *testing.T) {
 	}
 }
 
+
+func TestApplyHeaders_OpenAIIntent(t *testing.T) {
+	t.Parallel()
+	e := &GitHubCopilotExecutor{}
+	req, _ := http.NewRequest(http.MethodPost, "https://example.com", nil)
+	e.applyHeaders(req, "token", nil)
+	if got := req.Header.Get("Openai-Intent"); got != "conversation-edits" {
+		t.Fatalf("Openai-Intent = %q, want conversation-edits", got)
+	}
+}
+
+func TestApplyGitHubCopilotResponsesDefaults_DefaultsSet(t *testing.T) {
+	t.Parallel()
+	body := []byte(`{"input":"hello"}`)
+	got := applyGitHubCopilotResponsesDefaults(body)
+	if gjson.GetBytes(got, "store").Type != gjson.False {
+		t.Fatalf("store = %s, want false", gjson.GetBytes(got, "store").Raw)
+	}
+	include := gjson.GetBytes(got, "include").Array()
+	if len(include) != 1 || include[0].String() != "reasoning.encrypted_content" {
+		t.Fatalf("include = %s, want [\"reasoning.encrypted_content\"]", gjson.GetBytes(got, "include").Raw)
+	}
+}
+
+func TestApplyGitHubCopilotResponsesDefaults_AppendsReasoningEncryptedContent(t *testing.T) {
+	t.Parallel()
+	body := []byte(`{"input":"hello","include":["output_text"]}`)
+	got := applyGitHubCopilotResponsesDefaults(body)
+	include := gjson.GetBytes(got, "include").Array()
+	if len(include) != 2 {
+		t.Fatalf("include len = %d, want 2", len(include))
+	}
+	if include[0].String() != "output_text" || include[1].String() != "reasoning.encrypted_content" {
+		t.Fatalf("include = %s, want [\"output_text\",\"reasoning.encrypted_content\"]", gjson.GetBytes(got, "include").Raw)
+	}
+}
+
+func TestApplyGitHubCopilotResponsesDefaults_ReasoningSummaryAutoWhenEffortSet(t *testing.T) {
+	t.Parallel()
+	body := []byte(`{"input":"hello","reasoning":{"effort":"high"}}`)
+	got := applyGitHubCopilotResponsesDefaults(body)
+	if gjson.GetBytes(got, "reasoning.summary").String() != "auto" {
+		t.Fatalf("reasoning.summary = %s, want auto", gjson.GetBytes(got, "reasoning.summary").Raw)
+	}
+}
+
 // --- Tests for vision detection (Problem P) ---
 
 func TestDetectVisionContent_WithImageURL(t *testing.T) {

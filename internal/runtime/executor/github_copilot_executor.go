@@ -40,7 +40,7 @@ const (
 	copilotEditorVersion = "vscode/1.107.0"
 	copilotPluginVersion = "copilot-chat/0.35.0"
 	copilotIntegrationID = "vscode-chat"
-	copilotOpenAIIntent  = "conversation-panel"
+	copilotOpenAIIntent  = "conversation-edits"
 	copilotGitHubAPIVer  = "2025-04-01"
 )
 
@@ -147,6 +147,9 @@ func (e *GitHubCopilotExecutor) Execute(ctx context.Context, auth *cliproxyauth.
 	}
 	requestedModel := payloadRequestedModel(opts, req.Model)
 	body = applyPayloadConfigWithRoot(e.cfg, req.Model, to.String(), "", body, originalTranslated, requestedModel)
+	if useResponses {
+		body = applyGitHubCopilotResponsesDefaults(body)
+	}
 	body, _ = sjson.SetBytes(body, "stream", false)
 
 	path := githubCopilotChatPath
@@ -277,6 +280,9 @@ func (e *GitHubCopilotExecutor) ExecuteStream(ctx context.Context, auth *cliprox
 	}
 	requestedModel := payloadRequestedModel(opts, req.Model)
 	body = applyPayloadConfigWithRoot(e.cfg, req.Model, to.String(), "", body, originalTranslated, requestedModel)
+	if useResponses {
+		body = applyGitHubCopilotResponsesDefaults(body)
+	}
 	body, _ = sjson.SetBytes(body, "stream", true)
 	// Enable stream options for usage stats in stream
 	if !useResponses {
@@ -829,6 +835,35 @@ func normalizeGitHubCopilotResponsesInput(body []byte) []byte {
 func stripGitHubCopilotResponsesUnsupportedFields(body []byte) []byte {
 	// GitHub Copilot /responses rejects service_tier, so always remove it.
 	body, _ = sjson.DeleteBytes(body, "service_tier")
+	return body
+}
+
+func applyGitHubCopilotResponsesDefaults(body []byte) []byte {
+	// Copilot Responses requests should not be persisted server-side.
+
+	body, _ = sjson.SetBytes(body, "store", false)
+
+	include := gjson.GetBytes(body, "include")
+	hasReasoningEncryptedContent := false
+	if include.Exists() && include.IsArray() {
+		for _, v := range include.Array() {
+			if v.String() == "reasoning.encrypted_content" {
+				hasReasoningEncryptedContent = true
+				break
+			}
+		}
+		if !hasReasoningEncryptedContent {
+			body, _ = sjson.SetBytes(body, "include.-1", "reasoning.encrypted_content")
+		}
+	} else {
+		body, _ = sjson.SetRawBytes(body, "include", []byte(`["reasoning.encrypted_content"]`))
+	}
+
+	reasoning := gjson.GetBytes(body, "reasoning")
+	if reasoning.Exists() && reasoning.Type == gjson.JSON && reasoning.Get("effort").Exists() && !reasoning.Get("summary").Exists() {
+		body, _ = sjson.SetBytes(body, "reasoning.summary", "auto")
+	}
+
 	return body
 }
 
