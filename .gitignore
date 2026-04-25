@@ -30,7 +30,7 @@ auths/*
 
 # Documentation
 docs/*
-AGENTS.md
+# AGENTS.md is tracked in our fork (contains maintenance context)
 CLAUDE.md
 GEMINI.md
 
