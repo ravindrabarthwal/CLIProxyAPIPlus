@@ -34,7 +34,7 @@ We keep Copilot model definitions current by referencing `badlogic/pi-mono`
 - Whether a model uses `openai-responses` or `anthropic-messages` API
 
 Current Copilot models we support:
-- GPT: gpt-4o variants, gpt-4.1, gpt-5, gpt-5-mini, gpt-5.1/5.2/5.3 + codex variants, **gpt-5.4**, **gpt-5.4-mini**
+- GPT: gpt-4o variants, gpt-4.1, gpt-5, gpt-5-mini, gpt-5.1/5.2/5.3 + codex variants, **gpt-5.4**, **gpt-5.4-mini**, **gpt-5.5**
 - Claude: haiku-4.5, opus-4.1/4.5/4.6/**4.7**, sonnet-4/4.5/4.6
 - Gemini: 2.5-pro, 3-pro-preview, 3.1-pro-preview, 3-flash-preview
 - Other: grok-code-fast-1, oswe-vscode-prime
