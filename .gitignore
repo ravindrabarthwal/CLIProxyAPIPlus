@@ -1,20 +1,17 @@
 # Binaries
 cli-proxy-api
-cliproxy
 *.exe
-
 
 # Configuration
 config.yaml
 .env
-.mcp.json
+
 # Generated content
 bin/*
 logs/*
 conv/*
 temp/*
 refs/*
-tmp/*
 
 # Storage backends
 pgstore/*
@@ -30,27 +27,27 @@ auths/*
 
 # Documentation
 docs/*
-# AGENTS.md is tracked in our fork (contains maintenance context)
+AGENTS.md
 CLAUDE.md
 GEMINI.md
 
 # Tooling metadata
 .vscode/*
+.worktrees/
 .codex/*
 .claude/*
 .gemini/*
 .serena/*
 .agent/*
 .agents/*
-.agents/*
 .opencode/*
 .idea/*
+.beads/*
 .bmad/*
 _bmad/*
 _bmad-output/*
-.mcp/cache/
 
 # macOS
 .DS_Store
 ._*
-*.bak
+.gocache/

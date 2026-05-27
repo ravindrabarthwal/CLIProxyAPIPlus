@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	sdktranslator "github.com/router-for-me/CLIProxyAPI/v6/sdk/translator"
+	sdktranslator "github.com/router-for-me/CLIProxyAPI/v7/sdk/translator"
 	"github.com/tidwall/gjson"
 )
 
@@ -342,7 +342,6 @@ func TestApplyHeaders_GitHubAPIVersion(t *testing.T) {
 		t.Fatalf("X-Github-Api-Version = %q, want 2025-04-01", got)
 	}
 }
-
 
 func TestApplyHeaders_OpenAIIntent(t *testing.T) {
 	t.Parallel()

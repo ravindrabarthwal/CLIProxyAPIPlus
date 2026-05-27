@@ -3,7 +3,7 @@ package auth
 import (
 	"testing"
 
-	internalconfig "github.com/router-for-me/CLIProxyAPI/v6/internal/config"
+	internalconfig "github.com/router-for-me/CLIProxyAPI/v7/internal/config"
 )
 
 func TestResolveOAuthUpstreamModel_SuffixPreservation(t *testing.T) {
@@ -42,15 +42,6 @@ func TestResolveOAuthUpstreamModel_SuffixPreservation(t *testing.T) {
 			channel: "gemini-cli",
 			input:   "gemini-2.5-pro",
 			want:    "gemini-2.5-pro-exp-03-25",
-		},
-		{
-			name: "kiro alias resolves",
-			aliases: map[string][]internalconfig.OAuthModelAlias{
-				"kiro": {{Name: "kiro-claude-sonnet-4-5", Alias: "sonnet"}},
-			},
-			channel: "kiro",
-			input:   "sonnet",
-			want:    "kiro-claude-sonnet-4-5",
 		},
 		{
 			name: "config suffix takes priority",
@@ -184,14 +175,8 @@ func createAuthForChannel(channel string) *Auth {
 		return &Auth{Provider: "aistudio"}
 	case "antigravity":
 		return &Auth{Provider: "antigravity"}
-	case "qwen":
-		return &Auth{Provider: "qwen"}
-	case "iflow":
-		return &Auth{Provider: "iflow"}
 	case "kimi":
 		return &Auth{Provider: "kimi"}
-	case "kiro":
-		return &Auth{Provider: "kiro"}
 	case "github-copilot":
 		return &Auth{Provider: "github-copilot"}
 	default:
@@ -212,14 +197,6 @@ func TestOAuthModelAliasChannel_GitHubCopilot(t *testing.T) {
 
 	if got := OAuthModelAliasChannel("github-copilot", ""); got != "github-copilot" {
 		t.Fatalf("OAuthModelAliasChannel() = %q, want %q", got, "github-copilot")
-	}
-}
-
-func TestOAuthModelAliasChannel_Kiro(t *testing.T) {
-	t.Parallel()
-
-	if got := OAuthModelAliasChannel("kiro", ""); got != "kiro" {
-		t.Fatalf("OAuthModelAliasChannel() = %q, want %q", got, "kiro")
 	}
 }
 
