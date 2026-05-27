@@ -158,7 +158,7 @@ func (m *AmpModule) registerManagementRoutes(engine *gin.Engine, baseHandler *ha
 	var authWithBypass gin.HandlerFunc
 	if auth != nil {
 		ampAPI.Use(auth)
-		authWithBypass = wrapManagementAuth(auth, "/threads", "/auth", "/docs", "/settings")
+		authWithBypass = wrapManagementAuth(auth, "/threads", "/actors", "/auth", "/docs", "/settings")
 	}
 
 	// Inject client API key into request context for per-client upstream routing
@@ -213,6 +213,8 @@ func (m *AmpModule) registerManagementRoutes(engine *gin.Engine, baseHandler *ha
 	}
 	// Add clientAPIKeyMiddleware after auth for per-client upstream routing
 	rootMiddleware = append(rootMiddleware, clientAPIKeyMiddleware())
+	engine.GET("/actors", append(rootMiddleware, proxyHandler)...)
+	engine.GET("/actors/*path", append(rootMiddleware, proxyHandler)...)
 	engine.GET("/threads", append(rootMiddleware, proxyHandler)...)
 	engine.GET("/threads/*path", append(rootMiddleware, proxyHandler)...)
 	engine.GET("/docs", append(rootMiddleware, proxyHandler)...)
