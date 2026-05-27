@@ -36,6 +36,26 @@ func mkResp(status int, hdr http.Header, body []byte) *http.Response {
 	}
 }
 
+type spyReadWriteCloser struct {
+	buf        bytes.Buffer
+	readCalled bool
+	closed     bool
+}
+
+func (s *spyReadWriteCloser) Read(p []byte) (int, error) {
+	s.readCalled = true
+	return s.buf.Read(p)
+}
+
+func (s *spyReadWriteCloser) Write(p []byte) (int, error) {
+	return s.buf.Write(p)
+}
+
+func (s *spyReadWriteCloser) Close() error {
+	s.closed = true
+	return nil
+}
+
 func TestCreateReverseProxy_ValidURL(t *testing.T) {
 	proxy, err := createReverseProxy("http://example.com", NewStaticSecretSource("key"))
 	if err != nil {
@@ -50,6 +70,36 @@ func TestCreateReverseProxy_InvalidURL(t *testing.T) {
 	_, err := createReverseProxy("://invalid", NewStaticSecretSource("key"))
 	if err == nil {
 		t.Fatal("expected error for invalid URL")
+	}
+}
+
+func TestModifyResponse_SkipsSwitchingProtocols(t *testing.T) {
+	proxy, err := createReverseProxy("http://example.com", NewStaticSecretSource("k"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	body := &spyReadWriteCloser{}
+	resp := &http.Response{
+		StatusCode: http.StatusSwitchingProtocols,
+		Header: http.Header{
+			"Connection": []string{"Upgrade"},
+			"Upgrade":    []string{"websocket"},
+		},
+		Body: body,
+	}
+
+	if err := proxy.ModifyResponse(resp); err != nil {
+		t.Fatalf("ModifyResponse error: %v", err)
+	}
+	if resp.Body != body {
+		t.Fatal("101 response body should not be replaced")
+	}
+	if _, ok := resp.Body.(io.ReadWriteCloser); !ok {
+		t.Fatal("101 response body must remain io.ReadWriteCloser")
+	}
+	if body.readCalled {
+		t.Fatal("101 response body should not be read")
 	}
 }
 

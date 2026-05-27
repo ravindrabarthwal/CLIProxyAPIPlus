@@ -51,6 +51,7 @@ func TestRegisterManagementRoutes(t *testing.T) {
 		{"/api/threads", http.MethodGet},
 		{"/api/thread-actors", http.MethodPost},
 		{"/actors/metadata?namespace=default", http.MethodGet},
+		{"/actors/gateway/threadActor/websocket/?rvt-namespace=default", http.MethodGet},
 		{"/threads/", http.MethodGet},
 		{"/threads.rss", http.MethodGet}, // Root-level route (no /api prefix)
 		{"/api/otel", http.MethodGet},
