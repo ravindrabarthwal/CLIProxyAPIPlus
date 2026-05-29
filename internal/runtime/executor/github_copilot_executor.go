@@ -587,8 +587,36 @@ func useGitHubCopilotResponsesEndpoint(sourceFormat sdktranslator.Format, model 
 	if sourceFormat.String() == "openai-response" {
 		return true
 	}
+
 	baseModel := strings.ToLower(thinking.ParseSuffix(model).ModelName)
+	if info := lookupGitHubCopilotStaticModel(baseModel); info != nil && len(info.SupportedEndpoints) > 0 {
+		if modelSupportsEndpoint(info.SupportedEndpoints, githubCopilotChatPath) {
+			return false
+		}
+		if modelSupportsEndpoint(info.SupportedEndpoints, githubCopilotResponsesPath) {
+			return true
+		}
+	}
+
 	return strings.Contains(baseModel, "codex")
+}
+
+func lookupGitHubCopilotStaticModel(modelID string) *registry.ModelInfo {
+	for _, model := range registry.GetGitHubCopilotModels() {
+		if model != nil && strings.EqualFold(model.ID, modelID) {
+			return model
+		}
+	}
+	return nil
+}
+
+func modelSupportsEndpoint(supportedEndpoints []string, endpoint string) bool {
+	for _, supportedEndpoint := range supportedEndpoints {
+		if supportedEndpoint == endpoint || supportedEndpoint == "ws:"+endpoint {
+			return true
+		}
+	}
+	return false
 }
 
 // flattenAssistantContent converts assistant message content from array format

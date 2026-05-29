@@ -70,10 +70,31 @@ func TestUseGitHubCopilotResponsesEndpoint_CodexModel(t *testing.T) {
 	}
 }
 
+func TestUseGitHubCopilotResponsesEndpoint_ResponsesOnlyModel(t *testing.T) {
+	t.Parallel()
+	if !useGitHubCopilotResponsesEndpoint(sdktranslator.FromString("openai"), "gpt-5.5") {
+		t.Fatal("expected responses-only model to use /responses")
+	}
+}
+
+func TestUseGitHubCopilotResponsesEndpoint_ResponsesOnlyModelWithThinkingSuffix(t *testing.T) {
+	t.Parallel()
+	if !useGitHubCopilotResponsesEndpoint(sdktranslator.FromString("openai"), "gpt-5.5(high)") {
+		t.Fatal("expected responses-only model with thinking suffix to use /responses")
+	}
+}
+
 func TestUseGitHubCopilotResponsesEndpoint_DefaultChat(t *testing.T) {
 	t.Parallel()
 	if useGitHubCopilotResponsesEndpoint(sdktranslator.FromString("openai"), "claude-3-5-sonnet") {
 		t.Fatal("expected default openai source with non-codex model to use /chat/completions")
+	}
+}
+
+func TestUseGitHubCopilotResponsesEndpoint_DualEndpointModelStaysChat(t *testing.T) {
+	t.Parallel()
+	if useGitHubCopilotResponsesEndpoint(sdktranslator.FromString("openai"), "gpt-5.4") {
+		t.Fatal("expected dual-endpoint model to keep /chat/completions for chat requests")
 	}
 }
 
